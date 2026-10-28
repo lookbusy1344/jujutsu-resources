@@ -65,14 +65,15 @@ You need to tell your agents to probe repos and ensure jj repos use `jj` command
 
 - Before the first VCS command, run `jj --ignore-working-copy root` as a command of its own. Do not chain it with other commands: a later failure hides its exit status. If jj succeeds, use jj for all VCS commands. Do not run git on jj repos. You have a skill for jj version control.
 
+### Jj reference docs
+
+- [jj-reference-full.md](jj-reference-full.md)
+- [jj-short-guide.md](jj-short-guide.md)
+- [jjui-guide.md](jjui-guide.md)
 
 ### Repo config for AI, pre-commit and pre-push
 
-jj lacks hooks (because committing is implicit and automatic) so it's a good idea to configure your agent with pre-commit and pre-push rules. Here's an example:
-
-todo
-
-Or checkout these repos for working examples:
+jj lacks hooks (because committing is implicit and automatic) so it's a good idea to configure your agent with pre-commit and pre-push rules. Checkout these repos for working examples in different languages. In each see `AGENTS.md`, `scripts/` folder, and `.claude` folder:
 
 #### .NET example
 
