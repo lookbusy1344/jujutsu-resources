@@ -42,6 +42,17 @@ https://marketplace.visualstudio.com/items?itemName=jjx.jjx
 
 https://plugins.jetbrains.com/plugin/30576-jujutsu-vcs-integration
 
+When using this plugin, ensure your `vcs.xml` is properly set for Jujutsu:
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$" vcs="Jujutsu" />
+  </component>
+</project>
+```
+
 ### Skill for AI
 
 This will help teach your AI about using jj:
