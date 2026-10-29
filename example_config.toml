@@ -1,0 +1,72 @@
+#:schema https://docs.jj-vcs.dev/latest/config-schema.json
+# The line above lets editors with TOML schema support (e.g. Taplo, Even Better TOML) validate keys and offer completion.
+
+# Example jj user config.
+# Open your own with `jj config edit --user`; `jj config path --user` prints its location.
+# `jj config list` shows the merged result of all config layers.
+
+[user]
+# Identity stamped on commits you author. Set these before your first commit.
+# Use the same email as your GitHub account (or its noreply address) so commits link to you.
+# name = "Your Name"
+# email = "you@example.com"
+
+[ui]
+# Tool for interactive hunk selection: `jj split`, `jj squash -i`, `jj diffedit`.
+# ":builtin" is jj's terminal UI. Any name here must match a [merge-tools.<name>] entry or a tool jj knows.
+diff-editor = ":builtin"
+# diff-editor = "vscode"
+# diff-editor = "p4merge"
+
+# Tool `jj resolve` launches for conflicted files.
+# jj ships a definition for "vscode" (runs `code`; needs the `code` command on PATH).
+# `jj config list --include-defaults merge-tools` lists all built-in tool definitions.
+merge-editor = "vscode"
+# merge-editor = "p4merge" # defined under [merge-tools.p4merge] below
+
+# A [merge-tools.<name>] table tells jj how to call an external tool.
+# $left, $right, $base and $output are placeholders jj replaces with temp file or directory paths.
+# diff-args:  used by `jj diff --tool <name>`.
+# edit-args:  used when the tool is ui.diff-editor (`jj split` etc.).
+# merge-args: used when the tool is ui.merge-editor (`jj resolve`).
+
+# Zed's `--diff` only compares two individual files, not directories
+[merge-tools.zed]
+program = "zed"
+diff-args = ["--wait", "--diff", "$left", "$right"] # --wait blocks until the tab closes, so jj knows when you are done
+diff-invocation-mode = "file-by-file" # call the tool once per changed file instead of once with two directories
+edit-args = [] # zed has no dir-diff support
+# Zed has no 3-way merge view: edit jj's conflict-marker file; an untouched file leaves the conflict in place
+merge-args = ["--wait", "$output"]
+merge-tool-edits-conflict-markers = true # jj writes markers into $output and parses what is left after you save
+conflict-marker-style = "git" # <<<<<<< / ||||||| / ======= / >>>>>>> markers, familiar from git
+
+# p4merge as a 3-way merge tool (enable via ui.merge-editor above); diff with jj diff --tool p4merge
+[merge-tools.p4merge]
+program = "/Applications/p4merge.app/Contents/Resources/launchp4merge" # shim to handle exits
+merge-args = ["$base", "$left", "$right", "$output"] # p4merge argument order: base, two sides, result
+diff-args = ["$left", "$right"]
+diff-invocation-mode = "file-by-file"
+edit-args = [] # p4merge has no dir-diff support
+
+[operation]
+# Identity recorded on operations (op log / evolog), separate from commit identity above.
+# Defaults to your OS user and machine name. Override to keep those out of shared logs,
+# or to get stable values on machines whose hostname changes.
+# username = "your-username"
+# hostname = "your-machine"
+
+# Custom subcommands: `jj <alias>` expands to the list. Extra arguments are appended.
+# `util exec -- sh -c '...'` runs a shell script, for aliases that chain several jj commands.
+[aliases]
+pmain = ["util", "exec", "--", "sh", "-c", "jj fix && jj bookmark move main --to 'latest(heads(::@ & ~empty() & ~description(exact:\"\")))' && jj git push --bookmark main"] # run jj fix, move main to newest described non-empty ancestor of @ and push
+heads = ["log", "-r", "heads(all())", "--no-graph", "-T", "change_id.shortest() ++ \" \" ++ commit_id.short(8) ++ \" \" ++ committer.timestamp().local().format(\"%Y-%m-%d %H:%M:%S\") ++ \" \" ++ bookmarks ++ \" \" ++ description.first_line() ++ \"\\n\""] # show all heads, named and unnamed branches
+difftool = ["diff", "--tool", "p4merge"] # GUI diff in p4merge, one window per file; takes jj diff flags
+fixpush = ['util', 'exec', '--', 'sh', '-c', 'jj fix && jj git push "$@"', 'fixpush'] # run jj fix, then jj git push with any args; 'fixpush' fills $0 so "$@" gets your args
+is_clean = ['util', 'exec', '--', 'sh', '-c', 'e=$(jj --quiet --no-pager log -r @ --no-graph -T empty) || exit 2; if [ "$e" = true ]; then echo clean; else echo dirty; exit 1; fi'] # snapshot @; print "clean" (exit 0) or "dirty" (exit 1); exit 2 on jj error. jj itself also exits 1 on errors, so scripts check the word too
+
+# Named revsets, usable anywhere a revset is accepted: `jj log -r 'jayjay()'`.
+[revset-aliases]
+# The working copy, every mutable commit and up to 20 generations of its ancestors, plus trunk.
+# present() avoids an error where @ does not exist (e.g. a workspace with no working copy).
+'jayjay()' = 'present(@) | ancestors(immutable_heads().., 20) | trunk()'

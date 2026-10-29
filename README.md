@@ -59,6 +59,12 @@ This will help teach your AI about using jj:
 
 [skill/jj-version-control](skill/jj-version-control/)
 
+### Example config
+
+jj config lives in `~/.config/jj/config.toml`, here's an example file to help you out:
+
+[example_config.toml](example_config.toml)
+
 ### User level Claude / Codex comment:
 
 You need to tell your agents to probe repos and ensure jj repos use `jj` commands. Put this in your user level `CLAUDE.md` or `AGENTS.md`:
