@@ -65,6 +65,12 @@ jj config lives in `~/.config/jj/config.toml`, here's an example file to help yo
 
 [example_config.toml](example_config.toml)
 
+### Repo maintenance script
+
+A bash script that checks a jj repo for damage, trims the op log to the last few weeks (21 days by default), and runs `jj util gc`. It asks before changing anything, and `--dry-run` shows what it would do. Run it from anywhere inside the repo:
+
+[scripts/jj_tidy.sh](scripts/jj_tidy.sh)
+
 ### User level Claude / Codex comment:
 
 You need to tell your agents to probe repos and ensure jj repos use `jj` commands. Put this in your user level `CLAUDE.md` or `AGENTS.md`:
