@@ -98,3 +98,9 @@ https://github.com/lookbusy1344/HashRust
 #### Go/mixed example
 
 https://github.com/lookbusy1344/arm_emulator
+
+### Typical workflows
+
+Here's the book section on some typical workflows, once you've learned the basics: https://lookbusy1344.github.io/jujutsu-tutorial/real-world-workflows/intro.html
+
+The biggest difference from git is the optional nature of bookmarks (branch markers, in git terminology). Heads can exist quite happily on their own without a tag or branch reference, so a common workflow is: commit, commit, commit, update bookmark, push to github.
