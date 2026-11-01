@@ -107,7 +107,13 @@ https://lookbusy1344.github.io/jujutsu-tutorial/real-world-workflows/intro.html
 
 The biggest difference from git is the optional nature of bookmarks (branch markers, in git terminology). Heads can exist quite happily on their own without a tag or branch reference, so a common workflow is:
 
-`commit`, `commit`, `commit`, `update bookmark`, `push` to github.
+```
+jj commit -m "feat: first change"
+jj commit -m "feat: second change"
+jj commit -m "fix: third change"
+jj bookmark set main -r @-      # @ is the empty working copy, so the tip is @-
+jj git push --bookmark main
+```
 
 To list all heads, a command like this is helpful:
 
