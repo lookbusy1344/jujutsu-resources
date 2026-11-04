@@ -1,6 +1,6 @@
 # Useful Jujutsu version control links
 
-Jujutsu (jj) is a great new version control system. It uses git as a storage layer, so works with all git forges, your collegues can continue with vanilla git, and your existing tools will continue to work (although it's safest not to write with git tools, just read). If you don't like jj, just delete the `.jj` folder and your repo is vanilla git again!
+Jujutsu (jj) is a great new version control system. It uses git as a storage layer, so works with all git forges, your collegues can continue with git, and your existing tools will continue to work (although it's safest not to write with git tools, just read). If you don't like jj, just delete the `.jj` folder and your repo is vanilla git again!
 
 To convert a local git repo just run `jj git init`. That's it.
 
@@ -105,13 +105,17 @@ Here's the book section on some typical workflows, once you've learned the basic
 
 https://lookbusy1344.github.io/jujutsu-tutorial/real-world-workflows/intro.html
 
-The biggest difference from git is the optional nature of bookmarks (branch markers, in git terminology). Heads can exist quite happily on their own without a tag or branch reference, so a common workflow is:
+The biggest difference from git is the optional nature of bookmarks (branches, in git terminology). Heads can exist quite happily on their own without a tag or branch marker, so a common workflow is:
 
 ```
 jj commit -m "feat: first change"
 jj commit -m "feat: second change"
 jj commit -m "fix: third change"
-jj bookmark set main -r @-      # @ is the empty working copy, so the tip is @-
+
+# move the bookmark forward before pushing
+# @ is the working copy, so the tip is @-, one before the working copy
+
+jj bookmark set main -r @-
 jj git push --bookmark main
 ```
 
