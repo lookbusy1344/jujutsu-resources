@@ -23,6 +23,12 @@ FIND_EXPIRED_NON_MONOTONIC=2
 MULTIPLE_OP_HEADS_ERROR='resolved to more than one operation'
 NOT_COLOCATED='not counted (not colocated)'
 
+# ui.color = "always" puts escapes in captured template output, which this
+# script parses.
+jj() {
+  command jj --color never "$@"
+}
+
 assume_yes=0
 dry_run=0
 gc_requested=0
@@ -237,21 +243,20 @@ if (( damaged )); then
   die "$EXIT_DAMAGED" "Skipping op-log prune and GC: repair this repository first."
 fi
 
-# Report uncommitted changes in @. The `empty` query snapshots the working
-# copy, which would merge unmerged operation heads or race a running jj
-# command, so those cases skip the check.
+# Report uncommitted changes in @. `jj log` snapshots the working copy, which
+# would merge unmerged operation heads or race a running jj command, so those
+# cases skip the check.
 if (( unmerged_ops )); then
   wc_note='@ not checked: unmerged concurrent operations'
 elif jj_running_in_repo; then
   wc_note='@ not checked: jj is busy in this repository'
-elif wc_empty=$(jj --quiet --no-pager log -r @ --no-graph -T empty); then
-  case "$wc_empty" in
-    true) ;;
-    false) wc_note='@ is dirty' ;;
-    *) wc_note="@ check failed: unexpected output '$wc_empty'" ;;
-  esac
 else
-  wc_note='@ check failed (jj log -r @)'
+  wc_empty=$(jj --quiet log -r @ --no-graph -T empty)
+  case "$?:$wc_empty" in
+    0:true) ;;
+    0:false) wc_note='@ is dirty' ;;
+    *) wc_note='@ check failed (jj log)' ;;
+  esac
 fi
 
 expired_head=
@@ -296,13 +301,17 @@ if (( dry_run )); then
   exit 0
 fi
 
-# Only GC reclaims what a prune leaves behind, so a confirmed prune implies GC.
+# One prompt covers all the work. Only GC reclaims what a prune leaves
+# behind, so a prune always runs with GC.
 prune=0
 gc=0
-if [[ -n "$expired_head" ]] &&
-  confirm "Abandon $expired_count operations older than $op_keep_days days and run 'jj util gc'?"; then
-  prune=1
-  gc=1
+if [[ -n "$expired_head" ]]; then
+  if confirm "Abandon $expired_count operations older than $op_keep_days days and run 'jj util gc'?"; then
+    prune=1
+    gc=1
+  else
+    printf 'Skipped op-log prune and jj util gc.\n'
+  fi
 elif (( gc_requested || many_loose )); then
   if confirm "Run 'jj util gc'?"; then
     gc=1
